@@ -1,47 +1,51 @@
 name: Build Mod
 
-on:
-push:
-workflow_dispatch:
+'on':
+  push: {}
+  workflow_dispatch: {}
 
 jobs:
-build:
-runs-on: ubuntu-latest
-steps:
-- uses: actions/checkout@v4
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  - name: Check project files
-    run: |
-      pwd
-      ls -la
-      find . -type f \( -name "settings.gradle" -o -name "settings.gradle.kts" -o -name "build.gradle" -o -name "build.gradle.kts" \)
+      - name: Show project files
+        shell: bash
+        run: |
+          pwd
+          ls -la
+          find . -maxdepth 5 -type f \( -name 'settings.gradle' -o -name 'settings.gradle.kts' -o -name 'build.gradle' -o -name 'build.gradle.kts' \)
 
-  - uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: '17'
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-  - uses: gradle/actions/setup-gradle@v3
-    with:
-      gradle-version: 8.1.1
-      cache-disabled: true
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.1.1'
+          cache-disabled: true
 
-  - name: Build
-    shell: bash
-    run: |
-      SETTINGS=$(find . -type f \( -name settings.gradle -o -name settings.gradle.kts \) -print -quit)
-      if [ -z "$SETTINGS" ]; then
-        echo "Keine settings.gradle gefunden."
-        exit 1
-      fi
-      PROJECT_DIR=$(dirname "$SETTINGS")
-      echo "Projektordner: $PROJECT_DIR"
-      cd "$PROJECT_DIR"
-      gradle build --no-daemon
+      - name: Build
+        shell: bash
+        run: |
+          SETTINGS="$(find . -type f \( -name 'settings.gradle' -o -name 'settings.gradle.kts' \) -print -quit)"
+          if [ -z "$SETTINGS" ]; then
+            echo "ERROR: No settings.gradle found."
+            exit 1
+          fi
+          PROJECT_DIR="$(dirname "$SETTINGS")"
+          echo "Building in: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
+          gradle build --no-daemon
 
-  - name: Upload Mod
-    uses: actions/upload-artifact@v4
-    with:
-      name: hxhmod-jar
-      path: '**/build/libs/*.jar'
-      if-no-files-found: error
+      - name: Upload Mod
+        uses: actions/upload-artifact@v4
+        with:
+          name: hxhmod-jar
+          path: '**/build/libs/*.jar'
+          if-no-files-found: error
