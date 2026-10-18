@@ -8,10 +8,6 @@ jobs:
 build:
 runs-on: ubuntu-latest
 
-defaults:
-  run:
-    working-directory: ./hxh-nen-mod-github (3)
-
 steps:
   - uses: actions/checkout@v4
 
@@ -23,11 +19,16 @@ steps:
   - uses: gradle/actions/setup-gradle@v3
     with:
       gradle-version: 8.1.1
+      cache-disabled: true
 
-  - name: Check project files
-    run: ls -la
+  - name: Check project folder
+    run: |
+      pwd
+      ls -la
+      find . -maxdepth 4 -name "build.gradle" -o -name "settings.gradle"
 
   - name: Build
+    working-directory: ./hxh-nen-mod-github (3)
     run: gradle build --no-daemon
 
   - name: Upload Mod
